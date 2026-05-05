@@ -21,7 +21,7 @@
             <form hx-post="{% url 'members:invite' %}"
                   hx-target="#invitations-list"
                   hx-swap="beforeend"
-                  @htmx:after-request.window="if(event.detail.successful) { showInviteModal = false; document.getElementById('no-invites-placeholder')?.remove(); }"
+                  @htmx:after-request.camel.window="if(event.detail.successful) { showInviteModal = false; document.getElementById('no-invites-placeholder')?.remove(); }"
                   class="px-6 py-5 overflow-y-auto">
                 {% csrf_token %}
 
