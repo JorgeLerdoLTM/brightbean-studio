@@ -241,6 +241,10 @@ if EMAIL_BACKEND_TYPE == "smtp":
     EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
     EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+elif EMAIL_BACKEND_TYPE == "resend":
+    EMAIL_BACKEND = "apps.common.email_backends.ResendBackend"
+    RESEND_API_KEY = env("RESEND_API_KEY", default="") or env("EMAIL_HOST_PASSWORD", default="")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
