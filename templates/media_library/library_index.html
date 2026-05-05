@@ -13,7 +13,7 @@
                 background var(--dur-base, 200ms) var(--ease-out, ease);
   }
   .ml-dropzone.drag-over {
-    border-color: var(--primary, #F97316);
+    border-color: var(--primary, #492435);
     background: var(--primary-soft, #FFF7ED);
   }
   .ml-asset-card {
@@ -53,9 +53,9 @@
   }
   .ml-filter-pill:hover { border-color: var(--border-hover, #D6D3D1); }
   .ml-filter-pill.active {
-    background: var(--primary, #F97316);
+    background: var(--primary, #492435);
     color: var(--text-inverse, #FFF);
-    border-color: var(--primary, #F97316);
+    border-color: var(--primary, #492435);
   }
   .ml-progress-bar {
     background: var(--surface-2, #F5F5F4);
@@ -65,7 +65,7 @@
   }
   .ml-progress-fill {
     height: 100%;
-    background: var(--primary, #F97316);
+    background: var(--primary, #492435);
     border-radius: 9999px;
     transition: width 150ms ease;
   }
@@ -178,7 +178,7 @@
                placeholder="Search media..."
                class="w-full pl-9 pr-4 py-2 text-sm border rounded-lg outline-none"
                style="border-color: var(--border, #E7E5E4); background: var(--surface-0, #FFF);"
-               onfocus="this.style.borderColor='var(--primary, #F97316)'; this.style.boxShadow='0 0 0 3px var(--primary-ring, #FED7AA)'"
+               onfocus="this.style.borderColor='var(--primary, #492435)'; this.style.boxShadow='0 0 0 3px var(--primary-ring, #FED7AA)'"
                onblur="this.style.borderColor='var(--border, #E7E5E4)'; this.style.boxShadow='none'"
                hx-get="{% url 'media_library:index' workspace_id=workspace.id %}{% if current_folder %}?folder={{ current_folder }}{% endif %}"
                hx-trigger="keyup changed delay:400ms"
