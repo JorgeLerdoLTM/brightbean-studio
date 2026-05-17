@@ -10,8 +10,8 @@ import secrets
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import F, Q
 
 from apps.common.managers import OrgScopedManager
 
@@ -89,12 +89,6 @@ class APIKey(models.Model):
     class Meta:
         db_table = "api_keys"
         ordering = ["-created_at"]
-        constraints = [
-            models.CheckConstraint(
-                check=Q(workspace__isnull=True) | Q(workspace__organization=F("organization")),
-                name="apikey_workspace_org_match",
-            ),
-        ]
         indexes = [
             models.Index(fields=["organization", "workspace"], name="apikey_org_ws_idx"),
         ]
@@ -102,6 +96,18 @@ class APIKey(models.Model):
     def __str__(self) -> str:
         scope = f"workspace={self.workspace_id}" if self.workspace_id else "org-shared"
         return f"APIKey({self.name}, {scope})"
+
+    def clean(self):
+        super().clean()
+        # If a workspace is set it must belong to the same organization the
+        # key is scoped to. Django check constraints can't span joins, so we
+        # enforce this in clean() and call full_clean() from APIKey.issue().
+        if self.workspace_id and self.organization_id:
+            ws_org_id = self.workspace.organization_id
+            if ws_org_id != self.organization_id:
+                raise ValidationError(
+                    {"workspace": "Workspace must belong to the same organization as the API key."}
+                )
 
     @property
     def scope_label(self) -> str:
@@ -135,7 +141,7 @@ class APIKey(models.Model):
         can copy it; the database only keeps the hash.
         """
         raw_token = generate_raw_token()
-        key = cls.objects.create(
+        key = cls(
             name=name,
             organization=organization,
             workspace=workspace,
@@ -145,4 +151,6 @@ class APIKey(models.Model):
             created_by=created_by,
             expires_at=expires_at,
         )
+        key.full_clean()
+        key.save()
         return key, raw_token

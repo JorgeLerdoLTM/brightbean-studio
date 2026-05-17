@@ -68,11 +68,4 @@ class Migration(migrations.Migration):
             model_name="apikey",
             index=models.Index(fields=["organization", "workspace"], name="apikey_org_ws_idx"),
         ),
-        migrations.AddConstraint(
-            model_name="apikey",
-            constraint=models.CheckConstraint(
-                check=models.Q(("workspace__isnull", True)) | models.Q(("workspace__organization", models.F("organization"))),
-                name="apikey_workspace_org_match",
-            ),
-        ),
     ]
