@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import views_identity, views_media
+from . import views_identity, views_media, views_posts
 
 app_name = "api"
 
@@ -40,5 +40,16 @@ urlpatterns = [
         "organizations/<uuid:org_id>/media/folders/",
         views_media.org_folders,
         name="org_folders",
+    ),
+    # Workspace-scoped composer drafts
+    path(
+        "workspaces/<uuid:workspace_id>/posts/drafts/",
+        views_posts.workspace_drafts,
+        name="workspace_drafts",
+    ),
+    path(
+        "workspaces/<uuid:workspace_id>/posts/drafts/<uuid:post_id>/",
+        views_posts.workspace_draft_detail,
+        name="workspace_draft_detail",
     ),
 ]
