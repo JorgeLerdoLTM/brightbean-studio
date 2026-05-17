@@ -31,4 +31,6 @@ RUN DJANGO_SETTINGS_MODULE=config.settings.production \
 
 EXPOSE 8000
 
-CMD gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 2
+# Run migrations on container start, then launch Gunicorn. Failing migrations
+# crash the container loudly — preferred over silently serving an outdated schema.
+CMD python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 2 --threads 2
