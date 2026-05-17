@@ -1,0 +1,41 @@
+{% extends layout_template %}
+{% block title %}API Keys - Settings - Brightbean{% endblock %}
+{% block content %}
+<div x-data="{ showCreateModal: false, showTokenModal: false }">
+
+    <div class="flex items-center justify-between mb-2">
+        <div>
+            <h2 class="text-xl font-semibold" style="color: var(--text-primary);">API Keys</h2>
+            <p class="text-sm mt-1" style="color: var(--text-tertiary);">{{ scope_subhead }}</p>
+        </div>
+        <button @click="showCreateModal = true"
+                class="btn-opacity px-5 py-2 text-sm font-medium rounded-full cursor-pointer transition-colors"
+                style="background: var(--primary); color: white;">
+            Create API Key
+        </button>
+    </div>
+
+    <div class="mt-6" style="background: var(--surface-0); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden;">
+        <div class="px-6 py-4" style="border-bottom: 1px solid var(--border);">
+            <h3 class="text-sm font-semibold" style="color: var(--text-primary);">
+                {{ keys|length }} key{{ keys|length|pluralize }}
+            </h3>
+        </div>
+        <div id="api-keys-list">
+            {% for key in keys %}
+                {% include "api/partials/api_key_row.html" with key=key revoke_url_pattern=revoke_action_url_pattern %}
+            {% empty %}
+                <div class="px-6 py-8 text-center" id="no-keys-placeholder">
+                    <p class="text-sm" style="color: var(--text-tertiary);">No API keys yet. Click <strong>Create API Key</strong> above to mint your first one.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% include "api/partials/create_api_key_modal.html" %}
+
+    <!-- One-shot reveal modal slot (populated after create) -->
+    <div id="new-api-key-token-slot"></div>
+
+</div>
+{% endblock %}

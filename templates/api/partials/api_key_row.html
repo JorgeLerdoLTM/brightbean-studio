@@ -1,0 +1,69 @@
+{# Single row in the API keys list. Swappable via HTMX after revoke. #}
+<div class="px-6 py-4 flex items-center gap-4" id="api-key-{{ key.id }}"
+     style="border-bottom: 1px solid var(--border);">
+
+    <!-- Icon -->
+    <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+         style="background: var(--neutral-100); color: var(--text-tertiary);">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+    </div>
+
+    <!-- Name + metadata -->
+    <div class="flex-1 min-w-0">
+        <div class="text-sm font-medium truncate" style="color: var(--text-primary);">{{ key.name }}</div>
+        <div class="text-xs" style="color: var(--text-tertiary);">
+            <code class="px-1.5 py-0.5 rounded" style="background: var(--neutral-100); font-family: var(--font-mono);">{{ key.token_prefix }}…</code>
+            · Created {{ key.created_at|timesince }} ago
+            {% if key.last_used_at %}
+              · Last used {{ key.last_used_at|timesince }} ago
+            {% else %}
+              · Never used
+            {% endif %}
+            {% if key.expires_at %}
+              · Expires in {{ key.expires_at|timeuntil }}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Scope tag -->
+    <div class="flex-shrink-0">
+        {% if key.workspace_id %}
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #DBEAFE; color: #1E40AF;">Workspace · {{ key.workspace.name }}</span>
+        {% else %}
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: #FEF3C7; color: #92400E;">Org-shared</span>
+        {% endif %}
+    </div>
+
+    <!-- Status -->
+    <div class="flex-shrink-0">
+        {% if key.is_active %}
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: var(--success-50); color: var(--success-700);">Active</span>
+        {% elif key.revoked_at %}
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: var(--neutral-100); color: var(--text-tertiary);">Revoked</span>
+        {% else %}
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background: var(--neutral-100); color: var(--text-tertiary);">Expired</span>
+        {% endif %}
+    </div>
+
+    <!-- Revoke -->
+    {% if key.is_active %}
+    <div class="flex-shrink-0">
+        {% if revoke_url_pattern == "ws" %}
+            {% url 'api_keys_ws:workspace_revoke' workspace_id=request.workspace.id key_id=key.id as revoke_url %}
+        {% else %}
+            {% url 'api_keys_org:org_revoke' key_id=key.id as revoke_url %}
+        {% endif %}
+        <form hx-post="{{ revoke_url }}"
+              hx-target="#api-key-{{ key.id }}"
+              hx-swap="delete"
+              hx-confirm="Revoke this API key? The agent using it will immediately lose access.">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn-danger-soft-bg text-xs px-3 py-1.5 rounded-full font-medium cursor-pointer transition-colors"
+                    style="color: #DC2626; background: transparent;">
+                Revoke
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>

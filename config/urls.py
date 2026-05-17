@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.accounts.views import health_check
+from apps.api.urls_keys import org_urlpatterns as api_keys_org_urls
+from apps.api.urls_keys import workspace_urlpatterns as api_keys_workspace_urls
 from apps.approvals.views import org_approval_queue
 
 urlpatterns = [
@@ -36,6 +38,15 @@ urlpatterns = [
     path("organizations/media/", include("apps.media_library.urls_org")),
     # Public REST API for external agents
     path("api/v1/", include("apps.api.urls")),
+    # Settings UI: API key management (workspace + org pages)
+    path(
+        "workspace/<uuid:workspace_id>/settings/api-keys/",
+        include((api_keys_workspace_urls, "api_keys_ws")),
+    ),
+    path(
+        "organizations/settings/api-keys/",
+        include((api_keys_org_urls, "api_keys_org")),
+    ),
     path("", include("apps.accounts.urls_root")),
 ]
 
