@@ -33,6 +33,7 @@ from apps.media_library.services import (
 from apps.media_library.tasks import process_media_asset
 
 from .decorators import require_api_key
+from .notifications import notify_agent_upload
 from .serializers import asset_to_dict, folder_to_dict
 
 logger = logging.getLogger(__name__)
@@ -139,6 +140,7 @@ def _create_asset_for_scope(request, *, organization, workspace):
 
     _apply_metadata_to_new_asset(asset, request)
     process_media_asset(str(asset.id))
+    notify_agent_upload(asset, request.api_key)
     return asset, None
 
 

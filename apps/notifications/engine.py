@@ -57,6 +57,8 @@ DEFAULT_CHANNELS: dict[str, dict[str, bool]] = {
     EventType.APPROVAL_REMINDER: {Channel.IN_APP: True, Channel.EMAIL: True},
     EventType.APPROVAL_STALLED: {Channel.IN_APP: True, Channel.EMAIL: True},
     EventType.CLIENT_CONNECTED_ACCOUNTS: {Channel.IN_APP: True, Channel.EMAIL: True},
+    EventType.MEDIA_AGENT_UPLOADED: {Channel.IN_APP: True, Channel.EMAIL: False},
+    EventType.POST_AGENT_DRAFTED: {Channel.IN_APP: True, Channel.EMAIL: False},
 }
 
 # Event types considered non-critical (suppressed during quiet hours).

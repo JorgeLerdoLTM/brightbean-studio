@@ -26,6 +26,7 @@ from apps.media_library.models import MediaAsset
 from apps.social_accounts.models import SocialAccount
 
 from .decorators import require_api_key
+from .notifications import notify_agent_draft
 from .serializers import draft_post_to_dict
 from .views_media import _enforce_workspace_scope
 
@@ -189,6 +190,7 @@ def _create_draft(request):
         )
 
     post.refresh_from_db()
+    notify_agent_draft(post, request.api_key)
     return JsonResponse(
         draft_post_to_dict(post, compose_url=_compose_url(request.workspace.id, post.id)),
         status=201,
