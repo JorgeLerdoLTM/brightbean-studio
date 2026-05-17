@@ -5,8 +5,53 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 from .managers import MediaAssetManager
+
+
+def _tenant_segment(organization_id, workspace_id):
+    """Build the ``<org>/<workspace or 'shared'>`` slug used by upload_to
+    callables. Falls back to ``unknown`` for the rare case where neither
+    id is set yet (only seen in tests building model instances by hand
+    without saving)."""
+    if not organization_id:
+        return "unknown"
+    if workspace_id:
+        return f"{organization_id}/{workspace_id}"
+    return f"{organization_id}/shared"
+
+
+def asset_upload_path(instance, filename):
+    """Object key for ``MediaAsset.file``.
+
+    ``media_library/<org_id>/<workspace_id or 'shared'>/YYYY/MM/<filename>``
+
+    Per-tenant prefix gives storage-level isolation (bucket policies can
+    use it; debugging is easier; future migrations are cheaper). Old
+    assets keep their original ``media_library/YYYY/MM/`` keys; only new
+    uploads use this layout."""
+    tenant = _tenant_segment(instance.organization_id, instance.workspace_id)
+    return f"media_library/{tenant}/{timezone.now():%Y/%m}/{filename}"
+
+
+def asset_thumbnail_path(instance, filename):
+    tenant = _tenant_segment(instance.organization_id, instance.workspace_id)
+    return f"media_library/thumbs/{tenant}/{timezone.now():%Y/%m}/{filename}"
+
+
+def version_upload_path(instance, filename):
+    """``MediaAssetVersion`` doesn't carry org/workspace directly — pull
+    them off the parent asset."""
+    asset = instance.media_asset
+    tenant = _tenant_segment(asset.organization_id, asset.workspace_id)
+    return f"media_library/versions/{tenant}/{timezone.now():%Y/%m}/{filename}"
+
+
+def version_thumbnail_path(instance, filename):
+    asset = instance.media_asset
+    tenant = _tenant_segment(asset.organization_id, asset.workspace_id)
+    return f"media_library/thumbs/{tenant}/{timezone.now():%Y/%m}/{filename}"
 
 
 class MediaFolder(models.Model):
@@ -120,7 +165,7 @@ class MediaAsset(models.Model):
     )
 
     # File info
-    file = models.FileField(upload_to="media_library/%Y/%m/")
+    file = models.FileField(upload_to=asset_upload_path)
     filename = models.CharField(max_length=255)
     media_type = models.CharField(max_length=20, choices=MediaType.choices)
     mime_type = models.CharField(max_length=100, blank=True, default="")
@@ -132,7 +177,7 @@ class MediaAsset(models.Model):
     duration = models.FloatField(default=0, help_text="Video duration in seconds.")
 
     # Thumbnail for videos and large images
-    thumbnail = models.ImageField(upload_to="media_library/thumbs/%Y/%m/", blank=True)
+    thumbnail = models.ImageField(upload_to=asset_thumbnail_path, blank=True)
 
     # Metadata
     alt_text = models.TextField(blank=True, default="")
@@ -249,8 +294,8 @@ class MediaAssetVersion(models.Model):
         related_name="versions",
     )
     version_number = models.PositiveIntegerField()
-    file = models.FileField(upload_to="media_library/versions/%Y/%m/")
-    thumbnail = models.ImageField(upload_to="media_library/thumbs/%Y/%m/", blank=True, default="")
+    file = models.FileField(upload_to=version_upload_path)
+    thumbnail = models.ImageField(upload_to=version_thumbnail_path, blank=True, default="")
     change_description = models.CharField(max_length=500, blank=True, default="")
     file_size = models.PositiveBigIntegerField(default=0)
     width = models.PositiveIntegerField(null=True, blank=True)
