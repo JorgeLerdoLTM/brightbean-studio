@@ -165,7 +165,7 @@ class MediaAsset(models.Model):
     )
 
     # File info
-    file = models.FileField(upload_to=asset_upload_path)
+    file = models.FileField(upload_to=asset_upload_path, max_length=255)
     filename = models.CharField(max_length=255)
     media_type = models.CharField(max_length=20, choices=MediaType.choices)
     mime_type = models.CharField(max_length=100, blank=True, default="")
@@ -177,7 +177,7 @@ class MediaAsset(models.Model):
     duration = models.FloatField(default=0, help_text="Video duration in seconds.")
 
     # Thumbnail for videos and large images
-    thumbnail = models.ImageField(upload_to=asset_thumbnail_path, blank=True)
+    thumbnail = models.ImageField(upload_to=asset_thumbnail_path, blank=True, max_length=255)
 
     # Metadata
     alt_text = models.TextField(blank=True, default="")
@@ -294,8 +294,8 @@ class MediaAssetVersion(models.Model):
         related_name="versions",
     )
     version_number = models.PositiveIntegerField()
-    file = models.FileField(upload_to=version_upload_path)
-    thumbnail = models.ImageField(upload_to=version_thumbnail_path, blank=True, default="")
+    file = models.FileField(upload_to=version_upload_path, max_length=255)
+    thumbnail = models.ImageField(upload_to=version_thumbnail_path, blank=True, default="", max_length=255)
     change_description = models.CharField(max_length=500, blank=True, default="")
     file_size = models.PositiveBigIntegerField(default=0)
     width = models.PositiveIntegerField(null=True, blank=True)
